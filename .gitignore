@@ -27,3 +27,4 @@
 *.fls
 *.fdb*
 main.pdf
+.venv
