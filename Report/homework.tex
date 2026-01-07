@@ -56,6 +56,7 @@ Before submitting your final report, make sure that you verify your solutions fr
 
 	\begin{center} 
 		\includegraphics[width=0.6\textwidth]{../figs/1.1_state_traj.pdf}
+		\captionsetup{hypcap=false}
 		\captionof{figure}{State trajectories for different controllers starting at $(10,10)$}
 		\label{fig:1.1-state-traj}
 	\end{center}
@@ -90,6 +91,7 @@ Before submitting your final report, make sure that you verify your solutions fr
 \begin{solutionbox}
 \begin{center}
 	\includegraphics[width=0.6\textwidth]{../figs/1.2_cost_compare.pdf}
+	\captionsetup{hypcap=false}
 	\captionof{figure}{Optimal cost and Infinite Horizon cost for different horizons for $x_0=(10,10)$}
 	\label{fig:1.2-costs}
 \end{center}
@@ -178,6 +180,7 @@ Thus equation~\ref{eq:pt_v0_p0} relates the maximum braking distance with initia
 \begin{solutionbox}
 \begin{center}
 	\includegraphics[width=0.6\textwidth]{../figs/2.4_feasibility.pdf}
+	\captionsetup{hypcap=false}
 	\captionof{figure}{The feasible region for MPC controllers with different $N$ along with the constraint boundary for $S_\infty$}
 	\label{fig:2.4}
 \end{center}
@@ -386,7 +389,30 @@ radius of the circles, $l$ is the length of the vehicle and $w$ is the width of 
 
 	\textbf{Hint:} This task involves only basic geometry.
 \end{assignment}
+\begin{solutionbox}
+\begin{itemize}
+	\item \textbf{Radius Calculation:} Given that the first circle is from a distance $d$ from the edge, radius $r$ can be calculated as the smallest circle that contains the edge. Applying the Pythagoras theorem 
+	$$
+		r = \sqrt{\frac{w^2}{4}+d^2}
+	$$
+	\item \textbf{Edge Distance $d$ Calculation:} The entire length $l$ is divided into $n_c$ segments of length $2d$. Therefore 
+	$$
+		d = \frac{l}{2n_c}
+	$$
+	\item \textbf{Center Calculation:} The centers are placed on the x axis of the origin at the vehicle center. The coordinates of the intersection of left edge and the x axis are $(-l/2,0)$. The centers are placed at odd multiples of $d$ from this point. Therefore 
+	$$
+		c_i = \left(-\frac{l}{2} + (2i+1)d, 0\right)
+	$$
+\end{itemize}
 
+Using the above calculations, a rectangle with $l=4$, $w=2$ and $n_c=3$ is shown below. 
+\begin{center}
+	\includegraphics[width=0.7\textwidth]{../figs/4.1.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{Application of the derived formulas}
+	\label{fig:circles}
+\end{center}
+\end{solutionbox}
 
 \begin{assignment}
 	Given that the current vehicle state is $x = (p_x, p_y, \psi, v)$, 
@@ -400,7 +426,26 @@ radius of the circles, $l$ is the length of the vehicle and $w$ is the width of 
 	\textbf{Hint:} You can write your result in terms of the rotation matrix $R(\psi)$ defined by 
 	the heading angle $\psi$. There is no need to work out everything into individual components.
 \end{assignment}
-
+\begin{solutionbox}
+The rotation matrix to rotate a point on 2D plane counter-clockwise by $\psi$ radians is given by 
+$$
+R(\psi) = \begin{bmatrix}
+    \cos \psi & -\sin \psi \\
+    \sin \psi & \cos \psi
+\end{bmatrix}
+$$
+The centers of the circles need to undergo a rotation and a shift (in that order) to go from local coordinates to global coordinates. The centers in global coordinates are given by 
+$$
+	\bar{c} = R(\psi)c + p 
+$$
+Where $p = (p_x, p_y)$ is the shift vector which points to the center of the car. Figure~\ref{fig:4.2} shows the result of this rotating and shifting.
+\begin{center}
+	\includegraphics[width=0.5\linewidth]{../figs/4.2.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{The centers shifted and rotated}
+	\label{fig:4.2}
+\end{center}
+\end{solutionbox}
 
 \begin{assignment}
 	Given that the controlled vehicle is covered by circles with 
@@ -419,7 +464,28 @@ radius of the circles, $l$ is the length of the vehicle and $w$ is the width of 
 
 	\textbf{Hint:} Squaring can get rid of isolated points of non-smoothness.
 \end{assignment}
-
+\begin{solutionbox}
+No collision translates to no overlap between circles. So, the condition can be written as 
+$$
+	\|\bar{c}_i - \bar{c}_j'\|_2 \ge r-r'
+$$
+The $\ell_2$ norm is non-smooth at the origin. Squaring both sides 
+$$
+	\|\bar{c}_i - \bar{c}_j'\|_2^2 -(r-r')^2 \ge 0
+$$
+Rearranging to get the desired form 
+$$
+	g(\bar{c}_i,\bar{c}_j') = (r-r')^2 -\|\bar{c}_i - \bar{c}_j'\|_2^2 \le 0
+$$
+Since the obstacles do not move, there centers are constant. Visually a negative sign on the quadratic function means it is not convex. However to confirm, the Hessian w.r.t $\bar{c}_i$ is 
+$$
+	\nabla^2 g = \begin{bmatrix}
+    -2 & 0 \\
+    0 & -2
+\end{bmatrix}
+$$
+Which has negative eigenvalues thus the constraint is not convex.
+\end{solutionbox}
 
 \begin{assignment}
 	Implement the constraint you derived into your MPC controller formulation.
