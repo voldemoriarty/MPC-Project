@@ -526,8 +526,16 @@ Which has negative eigenvalues thus the constraint is not convex.
 	(see the solution of the exercise session for some example code. You can use the argument \texttt{obstacle\_positions} to visualize the obstacle.)
 
 \end{assignment}
+\begin{solutionbox}
+\begin{center}
+	\includegraphics[width=0.5\linewidth]{../figs/4.4.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{Obstacle avoidance with the constraint}
+	\label{fig:4.4}
+\end{center}
+The derived constraint was implemented in the MPC controller. Weights of the controller were $Q=\mathrm{diag}(1,3,0.1,0.01),~Q_N=5Q,~R=\mathrm{diag}(1,0.01)$, Figure~\ref{fig:4.4} shows that without the constraint, the rectangles overlap meaning a collision occurs. With the constraint the rectangles do not overlap and the collision is avoided. However the car does not converge to a point that is within the parking spot. It shows a little offset in y-axis.
+\end{solutionbox}
 
-		
 
 \begin{assignment}
 	Play around with the tuning of $Q$, $R$, $N$ or other controller parameters (perhaps even $\nc$, feel free to get creative)
@@ -537,6 +545,30 @@ Which has negative eigenvalues thus the constraint is not convex.
 	and illustrate the final result with a plot of the trajectory.
 \end{assignment}
 
+\begin{solutionbox}
+Figure~\ref{fig:4.4} shows that there is an offset in $y$ and the car is not parked fully horizontal ($\psi \ne 0$). Increasing the weight of $y$ in $Q$ ($Q=\mathrm{diag}(1,\mathbf{15},0.1,0.01)$) makes the controller more aggressive, reducing the offset by increasing the velocity and angles in the trajectory as shown in Figure~\ref{fig:4.5-1}. 
+\begin{center}
+	\includegraphics[width=0.5\linewidth]{../figs/4.5-2-iter1.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{Improvement with $Q=\mathrm{diag}(1,\mathbf{15},0.1,0.01)$.  (Baseline with original weights)}
+	\label{fig:4.5-1}
+\end{center}
+
+However the parking angle was found to be a little off still. Further improvement was found by realizing that the offset and angle had to be zero only at the end of the trajectory. Therefore this time, $Q$ was kept the original and $Q_f$ was changed to $Q_f=\mathrm{diag}(5,\mathbf{50},\mathbf{50},5)Q$. This creates a cost function that penalizes last states much more aggressively thus forcing the controller to make a trajectory that ends closer to the origin, thus removing the offsets. Figure~\ref{fig:4.5-2} shows that this controller is not as aggressive during the maneuver and still stops at the center. This controller's performance was deemed acceptable and iterations were stopped. Figure~\ref{fig:4.5-3} shows the trajectory of the controller with obstacle showing successful avoidance.
+
+\begin{center}
+	\includegraphics[width=0.5\linewidth]{../figs/4.5-2.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{Improvement with $Q_f=\mathrm{diag}(5,\mathbf{50},\mathbf{50},5)Q$. (Baseline with original weights)}
+	\label{fig:4.5-2}
+\end{center}
+\begin{center}
+	\includegraphics[width=0.5\linewidth]{../figs/4.5-1.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{Trajectory of improved controller}
+	\label{fig:4.5-3}
+\end{center}
+\end{solutionbox}
 
 \begin{assignment}
 	Measure your solver time. A quick and easy way to do this is to invoke \texttt{perf\_counter} 
@@ -576,6 +608,21 @@ def __call__(self, y, log) -> np.ndarray:
 	and show the timings and state trajectory of the final controller.
 \end{assignment}
 
+\begin{solutionbox}
+The solver time was logged using a global variable and \texttt{perf\_counter}. Figure~\ref{fig:4.6-1} shows the time per iteration in blue. The controller violates the real-time constraint (time per iteration < $T_s=0.08$s) before 40 iterations. To fix this, the horizon was reduced from $N=30$ to $N=25$ without sacrificing performance (Figure~\ref{fig:4.6-2}). The updated controller now satisfies the real-time constraint.
+\begin{center}
+	\includegraphics[width=0.5\linewidth]{../figs/4.6-time.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{Time taken per iteration}
+	\label{fig:4.6-1}
+\end{center}
+\begin{center}
+	\includegraphics[width=0.5\linewidth]{../figs/4.6-Fast.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{Comparison of $N=30$ (Tuned) and $N=25$ (Fast)}
+	\label{fig:4.6-2}
+\end{center}
+\end{solutionbox}
 
 \newpage
 \section{State estimation}
