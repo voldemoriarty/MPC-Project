@@ -664,7 +664,29 @@ x, w = solver(P=np.eye(3), x0=np.zeros(3), y=np.zeros((10, 1)))
     \end{enumerate}
     \solution{See \texttt{MHE} in \texttt{session4\_sol.py}.} 
 \end{assignment}
-
+\begin{solutionbox}
+	\begin{enumerate}
+		\item Using the EKF class developed in the exercise session and the option to \texttt{use\_prior} in the provided solver code, the filtering update was implemented. 
+		\item To use $P_{T-N}^-$ and $\hat{x}_{T-N}$, $N$ previous samples of $\hat{x}$ and $P^-$ (a priori) are needed to be stored in a running window fashion. EKF updates are computed recursively as new data comes in and a buffer provides a delay of $N$ time steps to get $P^-_{T-N}$. 
+		\item For both $N=10$ and $N=25$, filtering reduces the variance in the state estimates as can be seen in Figure~\ref{fig:5.1-1},~\ref{fig:5.1-2}. As can be seen, shorter horizon without filtering produces estimates with very large variance. It is known that for a large enough $N$, the estimation error can go to zero without any prior filtering under few assumptions. This can be seen that $N=25$ produces estimates with much lower variance and bias than $N=10$ without filtering. Adding filtering adds information about the samples outside the horizon window thus improving the estimates. 
+		\item Figure~\ref{fig:5.1-3} shows the effect of clipping on the estimates. Since clipping in this case improves the EKF estimates, it also improves the MHE estimates. However this is a heuristic and only applicable to this problem. 
+	\end{enumerate}
+	\begin{center}
+		\includegraphics[width=\textwidth]{../figs/5.1-1.pdf}
+		\captionof{figure}{Effect of filtering on state estimates (no clipping in EKF)}
+		\label{fig:5.1-1}
+	\end{center}
+	\begin{center}
+		\includegraphics[width=\textwidth]{../figs/5.1-2.pdf}
+		\captionof{figure}{Effect of filtering on state estimates (no clipping in EKF)}
+		\label{fig:5.1-2}
+	\end{center}
+	\begin{center}
+		\includegraphics[width=\textwidth]{../figs/5.1-3.pdf}
+		\captionof{figure}{Effect of clipping on state estimates (with filtering)}
+		\label{fig:5.1-3}
+	\end{center}
+\end{solutionbox}
 
 
 \newpage 
