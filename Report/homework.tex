@@ -727,9 +727,12 @@ for multiple shooting (i.e., simultaneous approach).
 	a linear system. Is the output what you expect? Why?
 \end{assignment}
 \begin{lstlisting}[style=python]
-	<Paste the output of the program here.>
+it.    0 | JN = 1.51e+04 | ||h||2 = 1.25e-13
+it.    1 | JN = 1.51e+04 | ||h||2 = 1.41e-13
 \end{lstlisting}
-
+\begin{solutionbox}
+	The method converges after first iteration. For linear case, the OCP is an equality constrained quadratic program (QP). Newton-Lagrange works by approximating the OCP as a QP at each step. Since the true problem is a QP itself, this approximation is exact resulting in the true solution after one iteration. 
+\end{solutionbox}
 
 \subsection{Nonlinear test case}
 Now that you have tested your implementation on a linear system,
@@ -756,7 +759,15 @@ The problem that you can pass to your SQP solver is described by \texttt{ToyProb
 	Use the provided \texttt{animate\_iterates} function to animate the states and inputs over the iterates and to export a 
 	figure of the final solution. Add this plot in your report. Does your solution look plausible?
 \end{assignment}
+\begin{solutionbox}
+	Using an initial guess of all zeros except $x_0$, the solver converges after three iterations. The final cost is $J_N=226$ and constraint violation is $\left\|h\right\|_2=1.57\times10^{-9}$. The control sequence $u_k$ and the corresponding state sequence $x_k$ are shown in Figure~\ref{fig:6.3-1}. As can be seen, the found control sequence is stabilizing as it brings the state back to $0$. Therefore the solution is plausible.
 
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{../figs/Assignment6-2.pdf}
+		\captionof{figure}{$u_k$ and $x_k$ solution for an all zero guess}
+		\label{fig:6.3-1}
+	\end{center}
+\end{solutionbox}
 
 \begin{assignment} \label{assgn:simulate-init}
    Simulate the system and use this as an initial guess.
@@ -768,7 +779,15 @@ The problem that you can pass to your SQP solver is described by \texttt{ToyProb
    Does it look like the solution you just obtained in the previous exercise? 
    Why is this important?
 \end{assignment}
+\begin{solutionbox}
+	Using initial state $x_0$ and $u_k=0$ the system was simulated and the resulting state sequence $x_k$ was used as an initial guess. This resulted in the solver diverging. Figure~\ref{fig:6.3-1} shows that the state trajectory is very different from the previous exercise with states taking very large values. This can cause the solver to diverge because Newton-Lagrange is a local method which works by minimizing a quadratic approximation around the current point. When started far from the minimum, it may diverge, which is what is happening here. Line search is needed to damp the update to guarantee global convergence.
 
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{../figs/6.3-1.pdf}
+		\captionof{figure}{State trajectory for $x_0$}
+		\label{fig:6.3-1}
+	\end{center}
+\end{solutionbox}
 
 
 \subsection{Adding Line Search}
@@ -789,7 +808,16 @@ The problem that you can pass to your SQP solver is described by \texttt{ToyProb
    Do you notice any difference with respect to the solution in \cref{assgn:62}? 
    How do you explain this?
 \end{assignment}
+\begin{solutionbox}
+	With Armijo line search and dividing $\alpha$ by $0.8$ for every Armijo condition failure made the algorithm converge after 25 iterations. Penalty $c_v$ is chosen as $10\mathrm{max}(p^{v+1})$. The final cost was $J_N=226$ and constraint violations were $1.01\times10^{-10}$. The violations are small and the cost is the same as Assignment 6.2. Figure~\ref{fig:6.4-1} shows that the found solution exactly matches the previously found solution in Assignment 6.2. The method converges now thanks to the fact that line search can make Newton Lagrange from a locally converging to a globally converging algorithm. 
 
+
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{../figs/6.4-1.pdf}
+		\captionof{figure}{Solution with Armijo line search}
+		\label{fig:6.4-1}
+	\end{center}
+\end{solutionbox}
 
 
 
@@ -800,7 +828,15 @@ The problem that you can pass to your SQP solver is described by \texttt{ToyProb
 	
 	\textbf{Hint. } During the Newton-Lagrange iterations, check whether the Hessian of the QP cost is positive definite.
 \end{assignment}
+\begin{solutionbox}
+	The solver does not converge and runs out of iterations. Figure~\ref{fig:6.5-1} shows the solution. Upon checking the eigenvalues of $\begin{bmatrix} Q_k & S_k^\top \\ S_k & R_k \end{bmatrix}$ for $k=0,\cdots,N-1$ and $Q_N$ it was found that after first iteration the matrices started having negative eigenvalues which meant the QP is non-convex. Without convexity Newton step is not guaranteed to be a direction of descent thus causing the failure of convergence.
 
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{../figs/Assignment6-4-regFalse.pdf}
+		\captionof{figure}{Solution of the parking problem}
+		\label{fig:6.5-1}
+	\end{center}
+\end{solutionbox}
 
 
 \subsection{Adding Regularization}
@@ -815,7 +851,20 @@ The problem that you can pass to your SQP solver is described by \texttt{ToyProb
 	With this modification, run the method again on the Parking problem. Does it converge? 
 	\textbf{Hint.}  Make sure to set \texttt{cfg.regularize} to \texttt{True}!
 \end{assignment}
+\begin{solutionbox}
+	With regularization the problem converges to a solution in 65 iterations. The cost is $J_N=83.3$ and the constraint violations are $2.16\times10^{-7}$. This shows that the solution is valid. Figure~\ref{fig:6.6-1},~\ref{fig:6.6-2} show the solutions on a plot. This time the solution is much smoother than before and the state converges to $0$ further validating the solution. 
 
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{../figs/6.6-1.pdf}
+		\captionof{figure}{Solution of the parking problem with regularization}
+		\label{fig:6.6-1}
+	\end{center}
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{../figs/parking.pdf}
+		\captionof{figure}{$(x,y)$ positions of the parking problem solution}
+		\label{fig:6.6-2}
+	\end{center}
+\end{solutionbox}
 
  
 
