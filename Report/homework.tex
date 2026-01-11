@@ -219,7 +219,39 @@ the session.
 
 	\textbf{Hint.} The notion of a support function might be of use.
 \end{assignment}
+\begin{solutionbox}
+	Let $X_{\kappa}$ be the set of all states which satisfy $x \in X,~Kx \in U$.  We want to maximize $\alpha$ while respecting the constraints. This can be written as the optimization problem
+	$$
+		\begin{aligned}
+			\text{max} \quad & \alpha \\
+			\text{subject to} \quad & \mathrm{lev}_\alpha V_\infty \subset X_{\kappa}
+		\end{aligned} 
+	$$
+	Since given $X$ and $U$ are polyhedral sets, $X_{\kappa}$ is also a polyhedral set. We can write 
+	$$
+	X_{\kappa} = \left\{x \mid \underbrace{\begin{bmatrix}
+	H_x \\ H_uK
+	\end{bmatrix}}_{H \in \mathbb{R}^{d \times n}} x \le \underbrace{\begin{bmatrix}
+	h_x \\ h_u
+	\end{bmatrix}}_{g}\right\}
+	$$
+	Let $sigma_\alpha(v)$ be the support function of the ellipsoid 
+	$$
+		\sigma_\alpha(v) = \sqrt{\alpha}\left\|P^{-1/2}v\right\|_2
+	$$
+	Then the optimization problem can be written as 
+	$$
+		\begin{aligned}
+			\text{max} \quad & \alpha \\
+			\text{subject to} \quad & \sigma_\alpha(h_i) \le g_i \quad i=1,\cdots,d
+		\end{aligned} 
+	$$
 
+	The constraint can be expanded applying the definition of the support function. This leads to a constraint on $\alpha \le \frac{g_i^2}{h_i^TP^{-1}h_i}$. Thus the largest alpha can be found by taking the smallest over $i=1,\cdots,d$, i.e. 
+	$$
+		\alpha^* = \mathrm{min} \left\{\frac{g_i^2}{h_i^TP^{-1}h_i} \mid i = 1,\cdots,d\right\}
+	$$
+\end{solutionbox}
 
 
 \begin{assignment}
@@ -229,7 +261,16 @@ the session.
 	together with the polyhedral set $\{ x \in \R^n \mid x \in X,\; Kx \in U \}$.
 	Is the obtained ellipsoidal set a valid terminal set for the MPC problem?
 \end{assignment}
+\begin{solutionbox}
+	Figure~\ref{fig:3.2-1} shows the computed ellipse along with the polyhedral set $X_\kappa$. Since the elliptical set is positive invariant, it is a valid terminal set for the MPC problem.
 
+	\begin{center}
+	\includegraphics[width=0.7\textwidth]{../figs/3.2-1.pdf}
+	\captionsetup{hypcap=false}
+	\captionof{figure}{The set $X_\kappa$ and the maximal ellipse contained in the set}
+	\label{fig:3.2-1}
+\end{center}
+\end{solutionbox}
 
 Alternatively, we can more directly encode the requirements for the 
 invariant set and solve a convex optimization problem 
@@ -249,7 +290,20 @@ $x_{t+1} = A x_t + B u_t$ under the policy $u_t = K x_t$.
 		x^\top P x \leq 1 \implies x^\top(A + BK)^\top P (A + BK)x \leq 1  \quad \forall x \in \R
 	\]
 \end{assignment}
-
+\begin{solutionbox}
+	A constraint on $P$ and $K$ that guarantees the given requirement holds is the Lyapunov decrease constraint. i.e.
+	$$
+		x^T(A+BK)^TP(A+BK)x \le x^TPx
+	$$
+	This holds when 
+	$$
+		(A+BK)^TP(A+BK) \preceq P
+	$$
+	or 
+	$$
+		P - (A+BK)^TP(A+BK) \succeq 0
+	$$
+\end{solutionbox}
 
 
 \begin{assignment}\label{sess3:c1}
@@ -271,7 +325,27 @@ $x_{t+1} = A x_t + B u_t$ under the policy $u_t = K x_t$.
 		\item Apply the \href{https://inst.eecs.berkeley.edu/~ee127/sp21/livebook/thm_schur_compl.html}{Schur complement lemma}.
 	\end{enumerate}
 \end{assignment}
-
+\begin{solutionbox}
+	Multiplying LHS and RHS by $P^{-1}$ gives, 
+	$$
+		P^{-1} - P^{-1}(A+BK)^TP(A+BK)P^{-1} \succeq 0 
+	$$
+	The direction of inequality does not change since $P$ is positive definite. Using $S=P^{-1}$, the inequality becomes 
+	$$
+		S - (SA+SK^TB^T)S^{-1}(AS+BKS) \succeq 0
+	$$
+	Using $F = KS$
+	$$
+		S - (AS+BF)^TS^{-1}(AS+BF) \succeq 0 
+	$$
+	Applying the Schur complement lemma,
+	$$
+	\begin{bmatrix} 
+		S & (AS + BF)^\top \\ 
+		AS + BF & S 
+	\end{bmatrix} \succeq 0
+	$$
+\end{solutionbox}
 
 
 \begin{assignment}\label{sess3:c2}
@@ -290,7 +364,17 @@ $x_{t+1} = A x_t + B u_t$ under the policy $u_t = K x_t$.
 	\textbf{Hint.} An expression for the support function of an Ellipsoid is given in the 
 	slides. (It's also a useful exercise to derive it yourself from the definition, but this is not part of the assignment) 
 \end{assignment}
-
+\begin{solutionbox}
+	The support function of an ellipsoid with shape matrix $P$ is given by 
+	$$
+		\sigma(H_{x,i}) = \sqrt{H_{x,i}^T P^{-1} H_{x,i}} = \sqrt{H_{x,i}^T S H_{x,i}}
+	$$
+	Using this definition and squaring the support function constraint we get 
+	$$
+		H_{x,i}^T S H_{x,i} \le h_{x,i}^2
+	$$ 
+	Which is the required result.
+\end{solutionbox}
 
 \begin{assignment}\label{sess3:c3}
 	Similarly, show that $u = Kx$ satisfies the input constraints for all $x \in E$, 
@@ -300,6 +384,30 @@ $x_{t+1} = A x_t + B u_t$ under the policy $u_t = K x_t$.
 	\]
 	Use the Schur complement lemma to write this constraint as an LMI in $F$ and $S$.
 \end{assignment}
+\begin{solutionbox}
+	The constraint on input is 
+	$$
+		H_{u,i}^Tu \le h_{u,i}
+	$$
+	Using $u=Kx$
+	$$
+		H_{u,i}^TKx \le h_{u,i} \Rightarrow (H_{u,i}K^T)^Tx \le h_{u,i}
+	$$
+	This constraint on state can be written in terms of shape matrix as derived in previous section 
+	\begin{align*}
+		H_{u,i}^TKP^{-1}(K^TH_{u,i}) &\le h_{u,i}^2 \\ 
+		H_{u,i}^TFPF^TH_{u,i} &\le h_{u,i}^2 \quad (\mathrm{Using}~ K=FP,~P=P^T) \\ 
+		\Rightarrow h_{u,i}^2 - H_{u,i}^TFPF^TH_{u,i} &\ge 0
+	\end{align*}
+	Using the Schur complement, we can get our LMI 
+	$$
+		\begin{bmatrix} 
+			h_{u,i}^2 & H_{u,i} F \\ 
+			F^\top H_{u,i} & S 
+		\end{bmatrix} \succeq 0
+	$$
+	For $i=1,\cdots,m_u$.
+\end{solutionbox}
 
 \begin{assignment}
 	Since the volume of the ellipsoid is proportional to $\log \det P^{-1}$, we can now 
@@ -308,7 +416,29 @@ $x_{t+1} = A x_t + B u_t$ under the policy $u_t = K x_t$.
 	
 	Implement this problem using \texttt{cvxpy} and plot the resulting ellipsoid (using the given utility code as before) together with the new polyhedral set $\{ x \in \R^n \mid x \in X,\; FS^{-1}x \in U \}$.
 \end{assignment}
+\begin{solutionbox}
+	The problem can be solved with \texttt{cvxpy.log\_det(S)} routine. The summary of constraints required are 
+	\begin{itemize}
+		\item One LMI constraint for stability (Assignment~\ref{sess3:c1})
+		\item $m_x$ constraints for state constraints (Assignment~\ref{sess3:c2})
+		\item $m_u$ LMI constraints for inputs (Assignment~\ref{sess3:c3})
+		\item Total 38 constraints for the given case 
+	\end{itemize}
+	The summary of the variables in the optimization are 
+	\begin{itemize}
+		\item $S$: $n_x \times n_x$ Symmetric Positive Definite matrix
+		\item $F$: $n_u \times n_x$ general matrix 
+		\item Total 6 variables
+	\end{itemize}
 
+	The problem was solved in $75,625$ iterations. From the solution, the controller matrix $K$ and ellipsoid shape matrix $P$ are calculated as $P = S^{-1}$ and $K = FS^{-1}=FP$. From these the new polyhedral set and ellipse are calculated. Figure~\ref{fig:3.7-1} shows the sets together. As expected, the sets are larger than the sets obtained using the LQR solution.
+
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{../figs/3.7-1.pdf}
+		\captionof{figure}{Positive invariant set calculated with the LMI optimization along with the maximal ellipsoidal set}
+		\label{fig:3.7-1}
+	\end{center}
+\end{solutionbox}
 
 
 
